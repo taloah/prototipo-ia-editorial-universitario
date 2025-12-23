@@ -1,14 +1,119 @@
-import { Box, Heading } from '@chakra-ui/react'
+import React, { useState } from 'react';
+import { Box, Container, VStack, Heading, Text, Spinner, Alert, AlertIcon, Button } from '@chakra-ui/react';
+import ModuleInput from './components/ModuleInput';
+import { buildEditorialPrompt } from './modules/processing/promptBuilder';
+
+// Importación TEMPORAL - cambiar por el cliente real después
+import { generateWithFoundry } from './modules/api/client';
 
 function App() {
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+
+  const [borrador, setBorrador] = useState('');      // Aquí guardaremos la respuesta de la IA
+  const [isLoading, setIsLoading] = useState(false); // Para mostrar un spinner
+  const [error, setError] = useState(null);
+
+  const handleGenerate = async (params) => {
+    // Resetear estados
+    setIsLoading(true);
+    setError(null);
+    setBorrador('');
+
+    try {
+      // 1. Construir el prompt (LO QUE YA HACES)
+      const prompt = buildEditorialPrompt(params);
+      console.log('Prompt generado:', prompt);
+
+      // 2. Mostrar el prompt (LO QUE YA HACES)
+      setGeneratedPrompt(prompt);
+
+      // 3. NUEVO: Llamar a la API de Foundry
+      // IMPORTANTE: Esta función aún no existe, la crearemos después
+      const respuestaIA = await generateWithFoundry(prompt);
+
+      // 4. Guardar la respuesta de la IA
+      setBorrador(respuestaIA);
+      console.log('Borrador recibido de la IA:', respuestaIA.substring(0, 100) + '...');
+
+    } catch (err) {
+      // Manejar errores
+      console.error('Error al generar con IA:', err);
+      setError(err.message || 'Error desconocido al conectar con la IA');
+
+      // Opcional: Mantener un borrador de ejemplo si la API falla
+      // const mockResponse = await generateWithMock(prompt);
+      // setBorrador(mockResponse);
+
+    } finally {
+      // Detener el loading siempre
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <Box p={8}>
-      <Heading mb={6}>Prototipo IA Editorial Universitario</Heading>
-      <Box border="1px solid" borderColor="gray.200" p={4} borderRadius="md">
-        <p>Aquí irán los módulos de entrada y salida</p>
-      </Box>
-    </Box>
-  )
+    <Container maxW="container.lg" py={8}>
+      <VStack spacing={8} align="stretch">
+        <Box textAlign="center">
+          <Heading size="xl" color="blue.800" mb={2}>
+            Generador de Borradores Editoriales Universitarios
+          </Heading>
+          <Heading size="md" color="gray.600" fontWeight="normal">
+            Prototipo de Agente de IA para Comunicación Institucional
+          </Heading>
+        </Box>
+
+        <ModuleInput onGenerate={handleGenerate} />
+
+        {/* Vista actual del Día 4 - Prompt */}
+        {generatedPrompt && (
+          <Box p={4} borderWidth="1px" borderRadius="lg" bg="gray.50">
+            <Heading size="md" mb={2}>Prompt Generado</Heading>
+            <Box as="pre" p={3} bg="white" borderRadius="md" fontSize="sm" maxHeight="200px" overflow="auto">
+              {generatedPrompt}
+            </Box>
+          </Box>
+        )}
+        {/* NUEVO: Estados de la API */}
+        {isLoading && (
+          <Box p={8} textAlign="center">
+            <Spinner size="xl" color="blue.500" thickness="4px" />
+            <Text mt={4}>Consultando al modelo Phi-4 en Foundry...</Text>
+          </Box>
+        )}
+
+        {error && (
+          <Alert status="error" borderRadius="md">
+            <AlertIcon />
+            <Box>
+              <Text fontWeight="bold">Error</Text>
+              <Text fontSize="sm">{error}</Text>
+            </Box>
+          </Alert>
+        )}
+
+        {borrador && (
+          <Box p={6} borderWidth="1px" borderRadius="lg" boxShadow="md" bg="white">
+            <Heading size="md" mb={4}>Borrador Generado por IA</Heading>
+            <Box
+              p={4}
+              border="1px solid"
+              borderColor="gray.200"
+              borderRadius="md"
+              bg="gray.50"
+              whiteSpace="pre-wrap"
+              fontFamily="mono"
+              fontSize="sm"
+            >
+              {borrador}
+            </Box>
+            <Button mt={4} colorScheme="blue" size="sm">
+              Copiar al Portapapeles
+            </Button>
+          </Box>
+        )}
+      </VStack>
+    </Container>
+  );
 }
 
 export default App;
