@@ -1,118 +1,244 @@
 import React, { useState } from 'react';
-import { Box, Container, VStack, Heading, Text, Spinner, Alert, AlertIcon, Button } from '@chakra-ui/react';
-import ModuleInput from './components/ModuleInput';
-import { buildEditorialPrompt } from './modules/processing/promptBuilder';
+import {
+  Box,
+  Container,
+  Grid,
+  GridItem,
+  VStack,
+  Heading,
+  Text,
+  useToast,
+  Divider,
+  Badge,
+  HStack
+} from '@chakra-ui/react';
 
-// Importación TEMPORAL - cambiar por el cliente real después
+// Importaciones de Módulos
+import ModuleInput from './components/ModuleInput';
+import ModuleOutput from './components/ModuleOutput';
+import { buildEditorialPrompt } from './modules/processing/promptBuilder';
 import { generateWithFoundry } from './modules/api/client';
 
 function App() {
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-
-  const [borrador, setBorrador] = useState('');      // Aquí guardaremos la respuesta de la IA
-  const [isLoading, setIsLoading] = useState(false); // Para mostrar un spinner
+  // Estados PRINCIPALES
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [borrador, setBorrador] = useState('');
+  const [lastParams, setLastParams] = useState(null);
+  //const [generationCount, setGenerationCount] = useState(0);
 
+  const toast = useToast();
+
+  // Función PRINCIPAL: Generar borrador
   const handleGenerate = async (params) => {
-    // Resetear estados
+    // 1. Preparar estados
     setIsLoading(true);
     setError(null);
-    setBorrador('');
+    setLastParams(params);
 
     try {
-      // 1. Construir el prompt (LO QUE YA HACES)
+      // 2. Construir prompt
       const prompt = buildEditorialPrompt(params);
-      console.log('Prompt generado:', prompt);
+      console.log('Prompt construido:', prompt.substring(0, 150) + '...');
 
-      // 2. Mostrar el prompt (LO QUE YA HACES)
-      setGeneratedPrompt(prompt);
+      // 3. Llamar a Foundry
+      const respuesta = await generateWithFoundry(prompt);
 
-      // 3. NUEVO: Llamar a la API de Foundry
-      // IMPORTANTE: Esta función aún no existe, la crearemos después
-      const respuestaIA = await generateWithFoundry(prompt);
+      // 4. Guardar resultado
+      setBorrador(respuesta);
+      //setGenerationCount(prev => prev + 1);
 
-      // 4. Guardar la respuesta de la IA
-      setBorrador(respuestaIA);
-      console.log('Borrador recibido de la IA:', respuestaIA.substring(0, 100) + '...');
+      // 5. Feedback sutil (no toast intrusivo)
+      console.log('✅ Borrador generado exitosamente');
 
     } catch (err) {
-      // Manejar errores
-      console.error('Error al generar con IA:', err);
-      setError(err.message || 'Error desconocido al conectar con la IA');
-
-      // Opcional: Mantener un borrador de ejemplo si la API falla
-      // const mockResponse = await generateWithMock(prompt);
-      // setBorrador(mockResponse);
+      // 6. Manejar errores
+      console.error('Error en handleGenerate:', err);
+      setError(err.message || 'Error desconocido');
+      setBorrador('');
 
     } finally {
-      // Detener el loading siempre
+      // 7. Siempre detener loading
       setIsLoading(false);
     }
   };
 
+  // Función para regenerar con mismos parámetros
+  const handleRegenerate = () => {
+    if (lastParams) {
+      handleGenerate(lastParams);
+    } else {
+      toast({
+        title: 'Genera un borrador primero',
+        status: 'info',
+        duration: 2000,
+      });
+    }
+  };
+
   return (
-    <Container maxW="container.lg" py={8}>
-      <VStack spacing={8} align="stretch">
-        <Box textAlign="center">
+    <Container maxW="container.xl" py={6}>
+      <VStack spacing={6} align="stretch">
+        {/* ENCABEZADO */}
+        <Box textAlign="center" pb={4}>
           <Heading size="xl" color="blue.800" mb={2}>
-            Generador de Borradores Editoriales Universitarios
+            🎓 Generador de Contenido Editorial Universitario
           </Heading>
-          <Heading size="md" color="gray.600" fontWeight="normal">
-            Prototipo de Agente de IA para Comunicación Institucional
-          </Heading>
+          <Text color="gray.600" fontSize="lg">
+            Prototipo de IA especializada en comunicación institucional
+          </Text>
+          {/* <HStack justify="center" mt={3} spacing={4}>
+            <Badge colorScheme="blue" fontSize="0.9em">
+              Modelo: {import.meta.env.VITE_FOUNDRY_MODEL_NAME || 'Desconocido'}
+            </Badge>
+            <Badge colorScheme="green" fontSize="0.9em">
+              Generaciones: {generationCount}
+            </Badge>
+            <Badge colorScheme="purple" fontSize="0.9em">
+              {borrador ? 'Borrador listo' : 'Esperando parámetros'}
+            </Badge>
+          </HStack> */}
         </Box>
 
-        <ModuleInput onGenerate={handleGenerate} />
+        <Divider />
 
-        {/* Vista actual del Día 4 - Prompt */}
-        {generatedPrompt && (
-          <Box p={4} borderWidth="1px" borderRadius="lg" bg="gray.50">
-            <Heading size="md" mb={2}>Prompt Generado</Heading>
-            <Box as="pre" p={3} bg="white" borderRadius="md" fontSize="sm" maxHeight="200px" overflow="auto">
-              {generatedPrompt}
-            </Box>
-          </Box>
-        )}
-        {/* NUEVO: Estados de la API */}
-        {isLoading && (
-          <Box p={8} textAlign="center">
-            <Spinner size="xl" color="blue.500" thickness="4px" />
-            <Text mt={4}>Consultando al modelo Phi-4 en Foundry...</Text>
-          </Box>
-        )}
-
-        {error && (
-          <Alert status="error" borderRadius="md">
-            <AlertIcon />
-            <Box>
-              <Text fontWeight="bold">Error</Text>
-              <Text fontSize="sm">{error}</Text>
-            </Box>
-          </Alert>
-        )}
-
-        {borrador && (
-          <Box p={6} borderWidth="1px" borderRadius="lg" boxShadow="md" bg="white">
-            <Heading size="md" mb={4}>Borrador Generado por IA</Heading>
+        {/* LAYOUT PRINCIPAL: GRID DE 2 COLUMNAS */}
+        <Grid
+          templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+          gap={8}
+          height={{ lg: "calc(100vh - 200px)" }}
+          minHeight="600px"
+        >
+          {/* COLUMNA IZQUIERDA: FORMULARIO */}
+          <GridItem>
             <Box
-              p={4}
-              border="1px solid"
-              borderColor="gray.200"
-              borderRadius="md"
-              bg="gray.50"
-              whiteSpace="pre-wrap"
-              fontFamily="mono"
-              fontSize="sm"
+              height="100%"
+              display="flex"
+              flexDirection="column"
+              borderWidth="1px"
+              borderRadius="lg"
+              overflow="hidden"
+              boxShadow="md"
             >
-              {borrador}
+              {/* Header del panel izquierdo */}
+              <Box
+                p={4}
+                bg="blue.600"
+                color="white"
+                borderBottom="1px solid"
+                borderColor="blue.700"
+              >
+                <Heading size="md">📝 Parámetros del Contenido</Heading>
+                <Text fontSize="sm" opacity={0.9}>
+                  Define las características del borrador
+                </Text>
+              </Box>
+
+              {/* Contenido del formulario - con scroll si es necesario */}
+              <Box p={6} flex="1" overflowY="auto">
+                <ModuleInput onGenerate={handleGenerate} />
+              </Box>
+
+              {/* Footer del panel izquierdo */}
+              <Box
+                p={3}
+                bg="blue.50"
+                borderTop="1px solid"
+                borderColor="gray.200"
+                fontSize="sm"
+              >
+                <Text color="gray.600">
+                  💡 Completa todos los campos requeridos y haz clic en "Generar Borrador"
+                </Text>
+              </Box>
             </Box>
-            <Button mt={4} colorScheme="blue" size="sm">
-              Copiar al Portapapeles
-            </Button>
-          </Box>
-        )}
+          </GridItem>
+
+          {/* COLUMNA DERECHA: RESULTADO */}
+          <GridItem>
+            <Box
+              height="100%"
+              display="flex"
+              flexDirection="column"
+              borderWidth="1px"
+              borderRadius="lg"
+              overflow="hidden"
+              boxShadow="md"
+            >
+              {/* Header del panel derecho */}
+              <Box
+                p={4}
+                bg="green.600"
+                color="white"
+                borderBottom="1px solid"
+                borderColor="green.700"
+              >
+                <Heading size="md">📄 Borrador Generado</Heading>
+                <Text fontSize="sm" opacity={0.9}>
+                  Resultado del procesamiento por IA
+                </Text>
+              </Box>
+
+              {/* Contenido del resultado - ocupa todo el espacio disponible */}
+              <Box p={6} flex="1" overflowY="auto">
+                <ModuleOutput
+                  borrador={borrador}
+                  isLoading={isLoading}
+                  error={error}
+                  onRegenerate={handleRegenerate}
+                />
+
+                {/* Panel de información cuando no hay borrador */}
+                {!borrador && !isLoading && !error && (
+                  <Box
+                    textAlign="center"
+                    p={10}
+                    bg="gray.50"
+                    borderRadius="lg"
+                    border="2px dashed"
+                    borderColor="gray.300"
+                  >
+                    <Text fontSize="xl" color="gray.500" mb={3}>
+                      ⏳ Esperando para generar borrador
+                    </Text>
+                    <Text color="gray.600">
+                      Completa el formulario de la izquierda y haz clic en "Generar Borrador"
+                    </Text>
+                    <Text fontSize="sm" color="gray.500" mt={4}>
+                      El resultado aparecerá aquí automáticamente
+                    </Text>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Footer del panel derecho */}
+              <Box
+                p={3}
+                bg="green.50"
+                borderTop="1px solid"
+                borderColor="gray.200"
+                fontSize="sm"
+              >
+                <HStack justify="space-between">
+                  <Text color="gray.600">
+                    {borrador
+                      ? `📊 ${borrador.split(/\s+/).length} palabras • ${borrador.length} caracteres`
+                      : 'Listo para generar contenido'
+                    }
+                  </Text>
+                  <Text color="gray.500" fontSize="xs">
+                    {lastParams
+                      ? `Último: ${lastParams.tipoContenido || 'Sin tipo'}`
+                      : 'Sin generaciones previas'
+                    }
+                  </Text>
+                </HStack>
+              </Box>
+            </Box>
+          </GridItem>
+        </Grid>
       </VStack>
-    </Container>
+    </Container >
   );
 }
 

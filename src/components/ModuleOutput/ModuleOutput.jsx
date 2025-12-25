@@ -1,0 +1,189 @@
+import React from 'react';
+import {
+    Box,
+    Heading,
+    Text,
+    Button,
+    VStack,
+    HStack,
+    useClipboard,
+    Alert,
+    AlertIcon,
+    Spinner,
+    useToast
+} from '@chakra-ui/react';
+import { CopyIcon, RepeatIcon, DownloadIcon } from '@chakra-ui/icons';
+
+const ModuleOutput = ({
+    borrador,
+    isLoading,
+    error,
+    onRegenerate
+}) => {
+    const toast = useToast();
+    const { hasCopied, onCopy } = useClipboard(borrador || '');
+
+    // Función para copiar con toast
+    const handleCopy = () => {
+        onCopy();
+        toast({
+            title: 'Copiado',
+            description: 'Borrador copiado al portapapeles',
+            status: 'success',
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+
+    // Función para descargar
+    const handleDownload = () => {
+        const element = document.createElement('a');
+        const file = new Blob([borrador], { type: 'text/plain' });
+        element.href = URL.createObjectURL(file);
+        element.download = `borrador-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        toast({
+            title: 'Descargado',
+            description: 'Borrador guardado como archivo .txt',
+            status: 'success',
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+
+    // Estados de visualización
+    if (isLoading) {
+        return (
+            <Box p={8} textAlign="center" borderWidth="1px" borderRadius="lg">
+                <VStack spacing={4}>
+                    <Spinner size="xl" color="blue.500" />
+                    <Text>Generando borrador con IA...</Text>
+                </VStack>
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Alert status="error" borderRadius="lg">
+                <AlertIcon />
+                <Box>
+                    <Text fontWeight="bold">Error al generar borrador</Text>
+                    <Text fontSize="sm">{error}</Text>
+                    {onRegenerate && (
+                        <Button size="sm" mt={2} onClick={onRegenerate} colorScheme="red">
+                            Reintentar
+                        </Button>
+                    )}
+                </Box>
+            </Alert>
+        );
+    }
+
+    if (!borrador) {
+        return null; // No mostrar nada si no hay contenido
+    }
+
+    return (
+        <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
+            {/* Encabezado */}
+            <Box p={4} bg="blue.50" borderBottom="1px solid" borderColor="gray.200">
+                <Heading size="md">📄 Borrador Generado</Heading>
+            </Box>
+
+            {/* Acciones */}
+            <Box p={3} bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
+                <HStack spacing={3}>
+                    <Button
+                        size="sm"
+                        leftIcon={<CopyIcon />}
+                        onClick={handleCopy}
+                        colorScheme="blue"
+                        variant="outline"
+                    >
+                        {hasCopied ? '¡Copiado!' : 'Copiar'}
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        leftIcon={<DownloadIcon />}
+                        onClick={handleDownload}
+                        colorScheme="green"
+                        variant="outline"
+                    >
+                        Descargar
+                    </Button>
+
+                    {onRegenerate && (
+                        <Button
+                            size="sm"
+                            leftIcon={<RepeatIcon />}
+                            onClick={onRegenerate}
+                            colorScheme="blue"
+                        >
+                            Regenerar
+                        </Button>
+                    )}
+                </HStack>
+            </Box>
+
+            {/* Contenido */}
+            <Box p={4} flex="1" overflowY="auto">
+                <Box
+                    p={4}
+                    bg="gray.50"
+                    borderRadius="md"
+                    whiteSpace="pre-wrap"
+                    fontFamily="body"
+                    lineHeight="1.6"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    minHeight="400px"
+                    maxHeight="500px"
+                    overflowY="auto"
+                >
+                    {borrador}
+                </Box>
+
+                {/* Acciones debajo del contenido */}
+                <HStack justify="center" mt={4} spacing={4}>
+                    <Button
+                        size="sm"
+                        leftIcon={<CopyIcon />}
+                        onClick={handleCopy}
+                        colorScheme="blue"
+                        variant="outline"
+                    >
+                        {hasCopied ? '¡Copiado!' : 'Copiar'}
+                    </Button>
+
+                    <Button
+                        size="sm"
+                        leftIcon={<DownloadIcon />}
+                        onClick={handleDownload}
+                        colorScheme="green"
+                        variant="outline"
+                    >
+                        Descargar
+                    </Button>
+
+                    {onRegenerate && (
+                        <Button
+                            size="sm"
+                            leftIcon={<RepeatIcon />}
+                            onClick={onRegenerate}
+                            colorScheme="blue"
+                        >
+                            Nueva Versión
+                        </Button>
+                    )}
+                </HStack>
+            </Box>
+        </Box>
+    );
+};
+
+export default ModuleOutput;

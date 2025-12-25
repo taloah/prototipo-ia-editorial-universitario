@@ -116,7 +116,7 @@ const ModuleInput = ({ onGenerate }) => {
                 Parámetros del Borrador
             </Heading>
 
-            <VStack spacing={6} align="stretch">
+            <VStack spacing={4} align="stretch">
                 <Text color="gray.600" fontSize="sm">
                     Complete los siguientes campos para generar un borrador de contenido editorial universitario.
                 </Text>
@@ -297,11 +297,13 @@ const ModuleInput = ({ onGenerate }) => {
                     colorScheme="blue"
                     size="lg"
                     width="full"
-                    mt={4}
+                    mt={6}
+                    height="60px"
+                    fontSize="lg"
                     isLoading={false}
                     loadingText="Generando..."
                 >
-                    Generar Borrador
+                    🚀 Generar Borrador
                 </Button>
             </VStack>
         </Box>
