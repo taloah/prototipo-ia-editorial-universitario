@@ -1,4 +1,6 @@
 import React from 'react';
+import { downloadAsDocx } from '../../utils/docxGenerador';
+import { AttachmentIcon } from '@chakra-ui/icons'
 import {
     Box,
     Heading,
@@ -18,7 +20,8 @@ const ModuleOutput = ({
     borrador,
     isLoading,
     error,
-    onRegenerate
+    onRegenerate,
+    metadata = {}
 }) => {
     const toast = useToast();
     const { hasCopied, onCopy } = useClipboard(borrador || '');
@@ -53,6 +56,37 @@ const ModuleOutput = ({
             isClosable: true,
         });
     };
+
+    //Funcion para descargar como docx
+    const handleDownloadDocx = async () => {
+        if (!borrador) return;
+        try {
+            const filename = `borrador-editorial-${new Date().toISOString().split('T')[0]}`;
+            const success = await downloadAsDocx(borrador, filename, metadata);
+
+            if (success) {
+                toast({
+                    title: 'Documento .docx generado',
+                    description: 'Descargando archivo de Word',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                });
+            }
+        } catch (err) {
+            console.error('Error descargando DOCX:', err);
+            toast({
+                title: 'Error al generar .docx',
+                description: 'Se descargará como .txt en su lugar',
+                status: 'warning',
+                duration: 4000,
+                isClosable: true,
+            });
+            // Fallback a .txt
+            handleDownload();
+        }
+    };
+
 
     // Estados de visualización
     if (isLoading) {
@@ -113,6 +147,19 @@ const ModuleOutput = ({
                     >
                         {hasCopied ? '¡Copiado!' : 'Copiar'}
                     </Button>
+
+                    {/* Botón .docx (NUEVO) */}
+                    <Button
+                        size="sm"
+                        leftIcon={<AttachmentIcon />}
+                        onClick={handleDownloadDocx}
+                        variant="institucionalAzul"
+                        colorScheme="blue"
+                    >
+                        Word (.docx)
+                    </Button>
+
+                    {/* Botón .txt */}
 
                     <Button
                         size="sm"

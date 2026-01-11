@@ -213,6 +213,15 @@ function App() {
                   isLoading={isLoading}
                   error={error}
                   onRegenerate={handleRegenerate}
+                  metadata={{
+                    title: "Borrador Editorial Universitario",
+                    tipoContenido: lastParams?.tipoContenido,
+                    publicoObjetivo: lastParams?.publicoObjetivo,
+                    tono: lastParams?.tono,
+                    longitudAproximada: lastParams?.longitudAproximada,
+                    fechaGeneracion: new Date().toLocaleDateString()
+                  }}
+
                 />
 
                 {/* Panel de información cuando no hay borrador */}
