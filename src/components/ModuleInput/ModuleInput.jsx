@@ -205,7 +205,7 @@ const ModuleInput = ({ onGenerate }) => {
                         <IconButton
                             icon={<AddIcon />}
                             onClick={addPuntoClave}
-                            colorScheme="blue"
+                            variant="institucionalAzul"
                             aria-label="Añadir punto clave"
                         />
                     </HStack>
@@ -264,7 +264,7 @@ const ModuleInput = ({ onGenerate }) => {
                         <IconButton
                             icon={<AddIcon />}
                             onClick={addElementoExcluir}
-                            colorScheme="blue"
+                            variant="institucionalAzul"
                             aria-label="Añadir elemento a excluir"
                         />
                     </HStack>
@@ -294,7 +294,7 @@ const ModuleInput = ({ onGenerate }) => {
                 {/* Botón de Generar */}
                 <Button
                     type="submit"
-                    colorScheme="blue"
+                    variant="institucionalRojo"  // Usamos la variante roja
                     size="lg"
                     width="full"
                     mt={6}
@@ -302,6 +302,11 @@ const ModuleInput = ({ onGenerate }) => {
                     fontSize="lg"
                     isLoading={false}
                     loadingText="Generando..."
+                    boxShadow="md"
+                    _hover={{
+                        boxShadow: 'xl',
+                        transform: 'translateY(-2px)'
+                    }}
                 >
                     🚀 Generar Borrador
                 </Button>

@@ -90,19 +90,19 @@ const ModuleOutput = ({
     return (
         <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
             {/* Encabezado */}
-            <Box p={4} bg="blue.50" borderBottom="1px solid" borderColor="gray.200">
+            <Box p={4} bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
                 <Heading size="md">📄 Borrador Generado</Heading>
             </Box>
 
             {/* Acciones */}
             <Box p={3} bg="gray.50" borderBottom="1px solid" borderColor="gray.200">
+                {/* Acciones debajo del contenido */}
                 <HStack spacing={3}>
                     <Button
                         size="sm"
                         leftIcon={<CopyIcon />}
                         onClick={handleCopy}
-                        colorScheme="blue"
-                        variant="outline"
+                        variant="outlineAzul"  // Outline azul
                     >
                         {hasCopied ? '¡Copiado!' : 'Copiar'}
                     </Button>
@@ -111,10 +111,9 @@ const ModuleOutput = ({
                         size="sm"
                         leftIcon={<DownloadIcon />}
                         onClick={handleDownload}
-                        colorScheme="green"
-                        variant="outline"
+                        variant="outlineAzul"  // Outline azul
                     >
-                        Descargar
+                        Descargar (.txt)
                     </Button>
 
                     {onRegenerate && (
@@ -122,9 +121,9 @@ const ModuleOutput = ({
                             size="sm"
                             leftIcon={<RepeatIcon />}
                             onClick={onRegenerate}
-                            colorScheme="blue"
+                            variant="institucionalRojo"  // Rojo institucional
                         >
-                            Regenerar
+                            Nueva Versión
                         </Button>
                     )}
                 </HStack>
@@ -147,40 +146,6 @@ const ModuleOutput = ({
                 >
                     {borrador}
                 </Box>
-
-                {/* Acciones debajo del contenido */}
-                <HStack justify="center" mt={4} spacing={4}>
-                    <Button
-                        size="sm"
-                        leftIcon={<CopyIcon />}
-                        onClick={handleCopy}
-                        colorScheme="blue"
-                        variant="outline"
-                    >
-                        {hasCopied ? '¡Copiado!' : 'Copiar'}
-                    </Button>
-
-                    <Button
-                        size="sm"
-                        leftIcon={<DownloadIcon />}
-                        onClick={handleDownload}
-                        colorScheme="green"
-                        variant="outline"
-                    >
-                        Descargar
-                    </Button>
-
-                    {onRegenerate && (
-                        <Button
-                            size="sm"
-                            leftIcon={<RepeatIcon />}
-                            onClick={onRegenerate}
-                            colorScheme="blue"
-                        >
-                            Nueva Versión
-                        </Button>
-                    )}
-                </HStack>
             </Box>
         </Box>
     );

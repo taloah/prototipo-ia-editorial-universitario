@@ -25,7 +25,6 @@ function App() {
   const [error, setError] = useState(null);
   const [borrador, setBorrador] = useState('');
   const [lastParams, setLastParams] = useState(null);
-  //const [generationCount, setGenerationCount] = useState(0);
 
   const toast = useToast();
 
@@ -79,54 +78,60 @@ function App() {
   return (
     <Container maxW="container.xl" py={6}>
       <VStack spacing={6} align="stretch">
-        {/* ENCABEZADO */}
+        {/* ENCABEZADO - Actualizado con colores institucionales */}
         <Box textAlign="center" pb={4}>
-          <Heading size="xl" color="blue.800" mb={2}>
-            🎓 Generador de Contenido Editorial Universitario
+          <Heading
+            size="xl"
+            color="institucional.azul"
+            mb={2}
+            position="relative"
+            _after={{
+              content: '""',
+              display: 'block',
+              width: '100px',
+              height: '4px',
+              bg: 'institucional.rojo',
+              margin: '10px auto',
+              borderRadius: '2px'
+            }}
+          >
+            Generador de Contenido Editorial Universitario
           </Heading>
           <Text color="gray.600" fontSize="lg">
-            Prototipo de IA especializada en comunicación institucional
+            Prototipo de IA especializada en comunicación institucional de la UCSG.
           </Text>
-          {/* <HStack justify="center" mt={3} spacing={4}>
-            <Badge colorScheme="blue" fontSize="0.9em">
-              Modelo: {import.meta.env.VITE_FOUNDRY_MODEL_NAME || 'Desconocido'}
-            </Badge>
-            <Badge colorScheme="green" fontSize="0.9em">
-              Generaciones: {generationCount}
-            </Badge>
-            <Badge colorScheme="purple" fontSize="0.9em">
-              {borrador ? 'Borrador listo' : 'Esperando parámetros'}
-            </Badge>
-          </HStack> */}
         </Box>
 
-        <Divider />
+        <Divider borderColor="gray.300" />
 
-        {/* LAYOUT PRINCIPAL: GRID DE 2 COLUMNAS */}
+        {/* LAYOUT PRINCIPAL - Actualizado */}
         <Grid
           templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
           gap={8}
           height={{ lg: "calc(100vh - 200px)" }}
           minHeight="600px"
         >
-          {/* COLUMNA IZQUIERDA: FORMULARIO */}
+          {/* COLUMNA IZQUIERDA: FORMULARIO - AZUL INSTITUCIONAL */}
+
           <GridItem>
             <Box
               height="100%"
               display="flex"
               flexDirection="column"
-              borderWidth="1px"
+              borderWidth="2px"
               borderRadius="lg"
               overflow="hidden"
-              boxShadow="md"
+              boxShadow="lg"
+              borderColor="institucional.azul"
             >
-              {/* Header del panel izquierdo */}
+              {/* Header del panel izquierdo - AZUL */}
+
               <Box
                 p={4}
-                bg="blue.600"
+                bg="institucional.azul"
                 color="white"
-                borderBottom="1px solid"
-                borderColor="blue.700"
+                borderBottom="2px solid"
+                borderColor="institucional.azulOscuro"
               >
                 <Heading size="md">📝 Parámetros del Contenido</Heading>
                 <Text fontSize="sm" opacity={0.9}>
@@ -134,7 +139,7 @@ function App() {
                 </Text>
               </Box>
 
-              {/* Contenido del formulario - con scroll si es necesario */}
+              {/* Contenido del formulario */}
               <Box p={6} flex="1" overflowY="auto">
                 <ModuleInput onGenerate={handleGenerate} />
               </Box>
@@ -142,36 +147,37 @@ function App() {
               {/* Footer del panel izquierdo */}
               <Box
                 p={3}
-                bg="blue.50"
-                borderTop="1px solid"
-                borderColor="gray.200"
+                bg="institucional.azulBg"
+                borderTop="2px solid"
+                borderColor="institucional.azul"
                 fontSize="sm"
               >
-                <Text color="gray.600">
-                  💡 Completa todos los campos requeridos y haz clic en "Generar Borrador"
+                <Text color="institucional.azul" fontWeight="medium">
+                  💡 Completa todos los campos requeridos
                 </Text>
               </Box>
             </Box>
           </GridItem>
 
-          {/* COLUMNA DERECHA: RESULTADO */}
+          {/* COLUMNA DERECHA: RESULTADO - ROJO INSTITUCIONAL */}
           <GridItem>
             <Box
               height="100%"
               display="flex"
               flexDirection="column"
-              borderWidth="1px"
+              borderWidth="2px"
               borderRadius="lg"
               overflow="hidden"
-              boxShadow="md"
+              boxShadow="lg"
+              borderColor="institucional.rojo"
             >
-              {/* Header del panel derecho */}
+              {/* Header del panel derecho - ROJO */}
               <Box
                 p={4}
-                bg="green.600"
+                bg="institucional.rojo"
                 color="white"
-                borderBottom="1px solid"
-                borderColor="green.700"
+                borderBottom="2px solid"
+                borderColor="institucional.rojoOscuro"
               >
                 <Heading size="md">📄 Borrador Generado</Heading>
                 <Text fontSize="sm" opacity={0.9}>
@@ -179,7 +185,7 @@ function App() {
                 </Text>
               </Box>
 
-              {/* Contenido del resultado - ocupa todo el espacio disponible */}
+              {/* Contenido del resultado */}
               <Box p={6} flex="1" overflowY="auto">
                 <ModuleOutput
                   borrador={borrador}
@@ -193,19 +199,16 @@ function App() {
                   <Box
                     textAlign="center"
                     p={10}
-                    bg="gray.50"
+                    bg="institucional.rojoBg"
                     borderRadius="lg"
                     border="2px dashed"
-                    borderColor="gray.300"
+                    borderColor="institucional.rojo"
                   >
-                    <Text fontSize="xl" color="gray.500" mb={3}>
+                    <Text fontSize="xl" color="institucional.rojo" mb={3}>
                       ⏳ Esperando para generar borrador
                     </Text>
-                    <Text color="gray.600">
-                      Completa el formulario de la izquierda y haz clic en "Generar Borrador"
-                    </Text>
-                    <Text fontSize="sm" color="gray.500" mt={4}>
-                      El resultado aparecerá aquí automáticamente
+                    <Text color="institucional.rojoOscuro">
+                      Completa el formulario de la izquierda
                     </Text>
                   </Box>
                 )}
@@ -214,19 +217,19 @@ function App() {
               {/* Footer del panel derecho */}
               <Box
                 p={3}
-                bg="green.50"
-                borderTop="1px solid"
-                borderColor="gray.200"
+                bg="institucional.rojoBg"
+                borderTop="2px solid"
+                borderColor="institucional.rojo"
                 fontSize="sm"
               >
                 <HStack justify="space-between">
-                  <Text color="gray.600">
+                  <Text color="institucional.rojo" fontWeight="medium">
                     {borrador
                       ? `📊 ${borrador.split(/\s+/).length} palabras • ${borrador.length} caracteres`
                       : 'Listo para generar contenido'
                     }
                   </Text>
-                  <Text color="gray.500" fontSize="xs">
+                  <Text color="institucional.rojoOscuro" fontSize="xs">
                     {lastParams
                       ? `Último: ${lastParams.tipoContenido || 'Sin tipo'}`
                       : 'Sin generaciones previas'
@@ -238,7 +241,7 @@ function App() {
           </GridItem>
         </Grid>
       </VStack>
-    </Container >
+    </Container>
   );
 }
 
