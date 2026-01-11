@@ -57,8 +57,15 @@ const ModuleOutput = ({
     // Estados de visualización
     if (isLoading) {
         return (
-            <Box p={8} textAlign="center" borderWidth="1px" borderRadius="lg">
-                <VStack spacing={4}>
+            <Box
+                p={8}
+                textAlign="center"
+                borderWidth="2px"
+                borderRadius="lg"
+                borderColor="institucional.azul"
+                borderStyle="dashed"
+            >
+                <VStack spacing={6}>
                     <Spinner size="xl" color="blue.500" />
                     <Text>Generando borrador con IA...</Text>
                 </VStack>

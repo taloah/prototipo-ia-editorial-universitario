@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -26,14 +26,34 @@ function App() {
   const [borrador, setBorrador] = useState('');
   const [lastParams, setLastParams] = useState(null);
 
+  const resultRef = useRef(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
+
   const toast = useToast();
 
+  // Efecto para hacer scroll al resultado cuando se genera un nuevo borrador
+  useEffect(() => {
+    if (shouldScroll && resultRef.current) {
+      setTimeout(() => {
+        resultRef.current.scrollIntoView({
+          behavior: 'smooth', block: 'start'
+        });
+      }, 100);
+      setShouldScroll(false);
+    }
+  }, [shouldScroll, borrador, isLoading, error]);
+
   // Función PRINCIPAL: Generar borrador
-  const handleGenerate = async (params) => {
+  const handleGenerate = async (params, isRegenerate = false) => {
     // 1. Preparar estados
     setIsLoading(true);
     setError(null);
     setLastParams(params);
+
+    if (!isRegenerate) {
+      setShouldScroll(true);
+    }
+
 
     try {
       // 2. Construir prompt
@@ -65,7 +85,7 @@ function App() {
   // Función para regenerar con mismos parámetros
   const handleRegenerate = () => {
     if (lastParams) {
-      handleGenerate(lastParams);
+      handleGenerate(lastParams, true);
     } else {
       toast({
         title: 'Genera un borrador primero',
@@ -111,7 +131,7 @@ function App() {
           height={{ lg: "calc(100vh - 200px)" }}
           minHeight="600px"
         >
-          {/* COLUMNA IZQUIERDA: FORMULARIO - AZUL INSTITUCIONAL */}
+          {/* COLUMNA IZQUIERDA: FORMULARIO - AZUL*/}
 
           <GridItem>
             <Box
@@ -159,9 +179,10 @@ function App() {
             </Box>
           </GridItem>
 
-          {/* COLUMNA DERECHA: RESULTADO - ROJO INSTITUCIONAL */}
+          {/* COLUMNA DERECHA: RESULTADO - ROJO*/}
           <GridItem>
             <Box
+              ref={resultRef}
               height="100%"
               display="flex"
               flexDirection="column"
