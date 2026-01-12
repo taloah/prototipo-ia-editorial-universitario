@@ -10,7 +10,8 @@ import {
   useToast,
   Divider,
   Badge,
-  HStack
+  HStack,
+  Image
 } from '@chakra-ui/react';
 
 // Importaciones de Módulos
@@ -100,6 +101,7 @@ function App() {
       <VStack spacing={6} align="stretch">
         {/* ENCABEZADO - Actualizado con colores institucionales */}
         <Box textAlign="center" pb={4}>
+          <Image src="/logo-ucsg.png" alt="Logo UCSG" mb={6} margin="0 auto" display="block" />
           <Heading
             size="xl"
             color="institucional.azul"
