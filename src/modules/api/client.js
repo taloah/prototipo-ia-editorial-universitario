@@ -1,12 +1,6 @@
-/**
- * Cliente para Microsoft Foundry con modelo Phi-4
- *
- * IMPORTANTE: La estructura de la API de Foundry puede variar.
- * Este código es un punto de partida y puede necesitar ajustes.
- */
 
 /**
- * Genera un borrador usando el modelo Phi-4 en Microsoft Foundry
+ * Genera un borrador usando modelos de Microsoft Foundry
  * @param {string} prompt - Prompt estructurado completo
  * @returns {Promise<string>} - Respuesta del modelo (borrador generado)
  */
@@ -14,7 +8,7 @@ export const generateWithFoundry = async (prompt) => {
     // 1. Obtener credenciales desde variables de entorno
     const endpoint = import.meta.env.VITE_FOUNDRY_ENDPOINT;
     const apiKey = import.meta.env.VITE_FOUNDRY_API_KEY;
-    const modelName = import.meta.env.VITE_FOUNDRY_MODEL_NAME || 'Phi-4';
+    const modelName = import.meta.env.VITE_FOUNDRY_MODEL_NAME || 'Router';
 
     console.log('🔧 Configuración Foundry:', { endpoint, modelName, apiKey: apiKey ? '✅ Presente' : '❌ Faltante' });
 
@@ -27,7 +21,6 @@ export const generateWithFoundry = async (prompt) => {
 
     try {
         // 3. Preparar el cuerpo de la solicitud
-        // NOTA: La estructura EXACTA depende de la API de Foundry
         const requestBody = {
             model: modelName,
             messages: [
@@ -47,7 +40,7 @@ export const generateWithFoundry = async (prompt) => {
             presence_penalty: 0.1  // Penaliza tokens repetidos
         };
 
-        console.log('📤 Enviando solicitud a Foundry...');
+        console.log('Enviando solicitud a Foundry...');
         console.log('Prompt (primeros 300 chars):', prompt.substring(0, 300) + '...');
 
         // 4. Enviar la solicitud HTTP
@@ -56,16 +49,15 @@ export const generateWithFoundry = async (prompt) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // ⚠️ PRUEBA AMBAS OPCIONES - Foundry puede usar cualquiera
+
                 'Authorization': `Bearer ${apiKey}`,      // Opción 1
-                // 'api-key': apiKey,                     // Opción 2 (descomenta si la anterior falla)
             },
             body: JSON.stringify(requestBody)
         });
         const requestTime = Date.now() - startTime;
 
-        console.log(`⏱️  Tiempo de respuesta: ${requestTime}ms`);
-        console.log(`📥 Status: ${response.status} ${response.statusText}`);
+        console.log(`Tiempo de respuesta: ${requestTime}ms`);
+        console.log(`Status: ${response.status} ${response.statusText}`);
 
         // 5. Manejar la respuesta
         if (!response.ok) {
@@ -75,8 +67,7 @@ export const generateWithFoundry = async (prompt) => {
                 console.error('Detalles del error:', errorData);
                 errorDetail += ` - ${errorData.substring(0, 200)}`;
             } catch (e) {
-                e.console.warn('No se pudo leer el cuerpo del error');
-                // No se pudo leer el cuerpo del error
+                console.warn('No se pudo leer el cuerpo del error');
             }
 
             throw new Error(`Error del servidor Foundry: ${errorDetail}`);
@@ -87,7 +78,6 @@ export const generateWithFoundry = async (prompt) => {
         console.log('✅ Respuesta recibida de Foundry:', responseData);
 
         // 7. EXTRAER LA RESPUESTA - Esta es la parte MÁS IMPORTANTE
-        // La estructura puede variar. Probemos diferentes patrones comunes:
         let borradorGenerado = '';
 
         // Patrón 1: Estilo OpenAI (más común)
@@ -111,20 +101,18 @@ export const generateWithFoundry = async (prompt) => {
             const lastMessage = responseData.messages[responseData.messages.length - 1];
             borradorGenerado = lastMessage.content || JSON.stringify(lastMessage);
         }
-        // Si no reconocemos la estructura
         else {
-            console.warn('⚠️ Estructura de respuesta no reconocida. Data completa:', responseData);
+            console.warn('Estructura de respuesta no reconocida. Data completa:', responseData);
             borradorGenerado = `[Estructura de respuesta inesperada. Revisa la consola para detalles.]\n\nModelo: ${modelName}\nRespuesta en crudo: ${JSON.stringify(responseData, null, 2).substring(0, 500)}...`;
         }
 
-        console.log(`📝 Borrador extraído (${borradorGenerado.length} caracteres):`, borradorGenerado.substring(0, 200) + '...');
+        console.log(`Borrador extraído (${borradorGenerado.length} caracteres):`, borradorGenerado.substring(0, 200) + '...');
 
         return borradorGenerado;
 
     } catch (error) {
-        console.error('❌ Error en generateWithFoundry:', error);
+        console.error('Error en generateWithFoundry:', error);
 
-        // Mejorar el mensaje de error para debugging
         const errorMessage = error.message.includes('Failed to fetch')
             ? `Error de conexión: No se pudo contactar con Foundry. Verifica:
          1. El endpoint (${endpoint})
