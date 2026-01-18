@@ -15,10 +15,14 @@ import {
     TagCloseButton,
     Heading,
     Text,
-    useToast
+    useToast,
+    FormErrorMessage,
+    Progress
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, CloseIcon, AttachmentIcon } from '@chakra-ui/icons';
 import { getAvailableOptions } from '../../modules/processing/promptBuilder';
+import { analyzeExtractedText, extractTextFromFile, validateTextFile } from '../../utils/fileProcessor';
+
 
 const ModuleInput = ({ onGenerate }) => {
 
@@ -33,6 +37,13 @@ const ModuleInput = ({ onGenerate }) => {
     const [longitudAproximada, setLongitudAproximada] = useState('');
     const [elementoExcluirInput, setElementoExcluirInput] = useState('');
     const [elementosExcluir, setElementosExcluir] = useState([]);
+
+    // Estados para manejo de archivos subidos
+    const [archivo, setArchivo] = useState(null);
+    const [archivoTexto, setArchivoTexto] = useState('');
+    const [archivoError, setArchivoError] = useState('');
+    const [isProcesandoArchivo, setIsProcesandoArchivo] = useState(false);
+    const [archivoMetadata, setArchivoMetadata] = useState(null);
 
     const toast = useToast();
     const options = getAvailableOptions();
@@ -59,6 +70,56 @@ const ModuleInput = ({ onGenerate }) => {
 
     const removeElementoExcluir = (index) => {
         setElementosExcluir(elementosExcluir.filter((_, i) => i !== index));
+    };
+
+    // 2.1. Función para manejar selección de archivo
+
+    const handleFileSelect = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Resetear estados
+        setArchivoError('');
+        setArchivoTexto('');
+        setArchivoMetadata(null);
+        setIsProcesandoArchivo(true);
+
+        // Validar archivo
+        const validation = validateTextFile(file);
+        if (!validation.isValid) {
+            setArchivoError(validation.error);
+            setIsProcesandoArchivo(false);
+            return;
+        }
+
+        try {
+            // Extraer texto
+            const texto = await extractTextFromFile(file);
+            setArchivo(file);
+            setArchivoTexto(texto);
+
+            // Analizar metadata
+            const metadata = analyzeExtractedText(texto);
+            setArchivoMetadata(metadata);
+
+        } catch (error) {
+            setArchivoError(error.message);
+            setArchivo(null);
+            setArchivoTexto('');
+        } finally {
+            setIsProcesandoArchivo(false);
+        }
+    };
+
+    // Función para remover archivo
+    const handleRemoveFile = () => {
+        setArchivo(null);
+        setArchivoTexto('');
+        setArchivoMetadata(null);
+        setArchivoError('');
+        // Resetear input file
+        const fileInput = document.getElementById('file-input');
+        if (fileInput) fileInput.value = '';
     };
 
     // 3. Validacion de formulario
@@ -105,7 +166,7 @@ const ModuleInput = ({ onGenerate }) => {
             elementosExcluir
         };
 
-        onGenerate(params);
+        onGenerate(params, archivoTexto);
     };
 
     // 5. Renderizado del formulario
@@ -289,6 +350,88 @@ const ModuleInput = ({ onGenerate }) => {
                     <Text fontSize="sm" color="gray.500" mt={1}>
                         Aspectos del lenguaje o estilo que no deben aparecer
                     </Text>
+                </FormControl>
+
+                {/* Campo para archivo (OPCIONAL) */}
+                <FormControl>
+                    <FormLabel>
+                        <HStack>
+                            <AttachmentIcon />
+                            <Text>Documento de referencia (opcional)</Text>
+                        </HStack>
+                    </FormLabel>
+
+                    <VStack align="stretch" spacing={3}>
+                        {/* Input file oculto con botón personalizado */}
+                        <Input
+                            id="file-input"
+                            type="file"
+                            accept=".txt,.md,.csv,.json"
+                            onChange={handleFileSelect}
+                            display="none"
+                        />
+
+                        <Button
+                            as="label"
+                            htmlFor="file-input"
+                            variant="outline"
+                            cursor="pointer"
+                            leftIcon={<AttachmentIcon />}
+                            isLoading={isProcesandoArchivo}
+                            loadingText="Procesando..."
+                            width="full"
+                        >
+                            Seleccionar archivo (.txt, .md, .csv)
+                        </Button>
+
+                        <Text fontSize="xs" color="gray.600" textAlign="center">
+                            Máx. 50KB • Solo texto plano • Información será usada como contexto
+                        </Text>
+
+                        {/* Mostrar archivo seleccionado */}
+                        {archivo && (
+                            <Box
+                                p={3}
+                                borderWidth="1px"
+                                borderRadius="md"
+                                borderColor="green.200"
+                                bg="green.50"
+                            >
+                                <HStack justify="space-between" mb={2}>
+                                    <Text fontSize="sm" fontWeight="medium">
+                                        📎 {archivo.name}
+                                    </Text>
+                                    <IconButton
+                                        icon={<CloseIcon />}
+                                        size="xs"
+                                        onClick={handleRemoveFile}
+                                        aria-label="Remover archivo"
+                                        variant="ghost"
+                                    />
+                                </HStack>
+
+                                {archivoMetadata && (
+                                    <VStack align="stretch" spacing={1}>
+                                        <Text fontSize="xs">
+                                            📊 {archivoMetadata.words} palabras • {archivoMetadata.lines} líneas
+                                            {archivoMetadata.isTruncated && ' • (truncado)'}
+                                        </Text>
+                                        <Text fontSize="xs" color="gray.600" fontStyle="italic">
+                                            "{archivoMetadata.preview}"
+                                        </Text>
+                                    </VStack>
+                                )}
+                            </Box>
+                        )}
+
+                        {/* Mostrar errores */}
+                        {archivoError && (
+                            <Alert status="warning" size="sm" borderRadius="md">
+                                <AlertIcon boxSize="12px" />
+                                <Text fontSize="xs">{archivoError}</Text>
+                            </Alert>
+                        )}
+                    </VStack>
                 </FormControl>
 
                 {/* Botón de Generar */}

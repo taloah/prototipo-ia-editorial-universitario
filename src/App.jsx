@@ -45,10 +45,11 @@ function App() {
   }, [shouldScroll, borrador, isLoading, error]);
 
   // Función PRINCIPAL: Generar borrador
-  const handleGenerate = async (params, isRegenerate = false) => {
+  const handleGenerate = async (params, isRegenerate = false, archivoTexto = '') => {
     // 1. Preparar estados
     setIsLoading(true);
     setError(null);
+    setLastParams({ ...params, tieneArchivo: !!archivoTexto });
     setLastParams(params);
 
     if (!isRegenerate) {
@@ -58,10 +59,10 @@ function App() {
 
     try {
       // 2. Construir prompt
-      const prompt = buildEditorialPrompt(params);
-      console.log('Prompt construido:', prompt.substring(0, 150) + '...');
+      const prompt = buildEditorialPrompt(params, archivoTexto);
+      console.log('Prompt construido con contexto:', prompt.substring(0, 300) + '...');
 
-      // 3. Llamar a Foundry
+      // 3. Llamar al modelo
       const respuesta = await generateWithFoundry(prompt);
 
       // 4. Guardar resultado

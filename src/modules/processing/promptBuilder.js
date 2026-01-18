@@ -12,7 +12,7 @@
 * @throws {Error} Si los parámetros requeridos no están presentes
 */
 
-export const buildEditorialPrompt = (params) => {
+export const buildEditorialPrompt = (params, contextoArchivo = '') => {
 
     // 1. Validación y extracción de parámetros
 
@@ -156,6 +156,22 @@ Redacta un BORRADOR listo para revisión editorial sobre:\n`;
     prompt += `Priorice la claridad sobre la complejidad\n`;
     prompt += `NO incluya placeholders como [datos por completar] o [fotos por añadir]\n`;
     prompt += `Si necesita referirse a datos específicos no proporcionados, hágalo de forma genérica pero creíble\n\n`;
+
+    // 5. INTEGRACIÓN DE CONTEXTO ADICIONAL DE ARCHIVO (SI APLICA)
+
+    if (contextoArchivo && contextoArchivo.trim()) {
+        prompt += `\n\n--- CONTEXTO ADICIONAL DEL DOCUMENTO ADJUNTO ---\n`;
+        prompt += `A continuación se proporciona texto extraído de un documento adjunto:\n\n`;
+        prompt += `"${contextoArchivo}"\n\n`;
+        prompt += `--- FIN DEL CONTEXTO ADJUNTO ---\n\n`;
+
+        prompt += `**INSTRUCCIONES PARA USAR EL CONTEXTO:**\n`;
+        prompt += `1. Use este texto SOLO como información de referencia o contexto adicional\n`;
+        prompt += `2. Integre datos, cifras o información relevante SI es pertinente al tema principal\n`;
+        prompt += `3. NO repita el texto adjunto palabra por palabra\n`;
+        prompt += `4. SI el texto adjunto NO es relevante para "${temaPrincipal}", ignórelo\n`;
+        prompt += `5. Priorice SIEMPRE los parámetros principales proporcionados arriba\n\n`;
+    }
 
     prompt += `Por favor, genere el BORRADOR COMPLETO siguiendo estrictamente todas las especificaciones anteriores.`;
 
