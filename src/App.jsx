@@ -26,6 +26,7 @@ function App() {
   const [error, setError] = useState(null);
   const [borrador, setBorrador] = useState('');
   const [lastParams, setLastParams] = useState(null);
+  const [lastArchivoTexto, setLastArchivoTexto] = useState(''); // Estado para persistir el contenido del archivo
 
   const resultRef = useRef(null);
   const [shouldScroll, setShouldScroll] = useState(false);
@@ -45,12 +46,15 @@ function App() {
   }, [shouldScroll, borrador, isLoading, error]);
 
   // Función PRINCIPAL: Generar borrador
-  const handleGenerate = async (params, isRegenerate = false, archivoTexto = '') => {
+
+  const handleGenerate = async (params, archivoTexto = '', isRegenerate = false) => {
     // 1. Preparar estados
     setIsLoading(true);
     setError(null);
-    setLastParams({ ...params, tieneArchivo: !!archivoTexto });
+
+    // Guardar parámetros para regeneración futura
     setLastParams(params);
+    setLastArchivoTexto(archivoTexto);
 
     if (!isRegenerate) {
       setShouldScroll(true);
@@ -87,7 +91,8 @@ function App() {
   // Función para regenerar con mismos parámetros
   const handleRegenerate = () => {
     if (lastParams) {
-      handleGenerate(lastParams, true);
+      // Usamos los últimos parámetros Y el último texto de archivo
+      handleGenerate(lastParams, lastArchivoTexto, true);
     } else {
       toast({
         title: 'Genera un borrador primero',

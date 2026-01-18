@@ -97,10 +97,12 @@ const ModuleInput = ({ onGenerate }) => {
             const texto = await extractTextFromFile(file);
             setArchivo(file);
             setArchivoTexto(texto);
+            //console.log('Texto extraído del archivo:', texto);
 
             // Analizar metadata
             const metadata = analyzeExtractedText(texto);
             setArchivoMetadata(metadata);
+            //console.log('Metadata del archivo:', metadata);
 
         } catch (error) {
             setArchivoError(error.message);
