@@ -14,7 +14,7 @@ import {
     Spinner,
     useToast
 } from '@chakra-ui/react';
-import { CopyIcon, RepeatIcon, DownloadIcon } from '@chakra-ui/icons';
+import { CopyIcon, RepeatIcon, DownloadIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 
 const ModuleOutput = ({
     borrador,
@@ -51,6 +51,161 @@ const ModuleOutput = ({
         toast({
             title: 'Descargado',
             description: 'Borrador guardado como archivo .txt',
+            status: 'success',
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+
+    // Función para descargar como HTML
+    const handleDownloadHtml = () => {
+        if (!borrador) return;
+
+        // Convertir texto plano a HTML estructurado
+        const convertToHtml = (text) => {
+            const lines = text.split('\n');
+            let htmlContent = '';
+            let inList = false;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+
+                // Detectar encabezados (líneas en mayúsculas o que terminan con :)
+                if (trimmedLine && (trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3 && !/^[\d\-•]/.test(trimmedLine))) {
+                    if (inList) {
+                        htmlContent += '</ul>\n';
+                        inList = false;
+                    }
+                    htmlContent += `<h2>${trimmedLine}</h2>\n`;
+                }
+                // Detectar listas (líneas que empiezan con -, •, * o números)
+                else if (/^[\-•\*]\s/.test(trimmedLine) || /^\d+[\.\)]\s/.test(trimmedLine)) {
+                    if (!inList) {
+                        htmlContent += '<ul>\n';
+                        inList = true;
+                    }
+                    const listContent = trimmedLine.replace(/^[\-•\*\d\.\)]\s*/, '');
+                    htmlContent += `  <li>${listContent}</li>\n`;
+                }
+                // Líneas vacías
+                else if (!trimmedLine) {
+                    if (inList) {
+                        htmlContent += '</ul>\n';
+                        inList = false;
+                    }
+                }
+                // Párrafos normales
+                else {
+                    if (inList) {
+                        htmlContent += '</ul>\n';
+                        inList = false;
+                    }
+                    htmlContent += `<p>${trimmedLine}</p>\n`;
+                }
+            });
+
+            if (inList) {
+                htmlContent += '</ul>\n';
+            }
+
+            return htmlContent;
+        };
+
+        const title = metadata.title || 'Borrador Editorial Universitario';
+        const fecha = new Date().toLocaleDateString('es-EC', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        const htmlDocument = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.8;
+            color: #333;
+            background-color: #fafafa;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #003366;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #003366;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+        .metadata {
+            color: #666;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        h2 {
+            color: #003366;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-left: 4px solid #cc0000;
+            padding-left: 15px;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+        ul {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 0.85em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${title}</h1>
+        <p class="metadata">Generado el ${fecha}</p>
+    </div>
+    
+    <main>
+${convertToHtml(borrador)}
+    </main>
+    
+    <div class="footer">
+        <p>Documento generado por Prototipo IA Editorial Universitario - UCSG</p>
+    </div>
+</body>
+</html>`;
+
+        const element = document.createElement('a');
+        const file = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' });
+        element.href = URL.createObjectURL(file);
+        element.download = `borrador-${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+
+        toast({
+            title: 'Descargado',
+            description: 'Borrador guardado como archivo .html',
             status: 'success',
             duration: 2000,
             isClosable: true,
@@ -159,15 +314,24 @@ const ModuleOutput = ({
                         Word (.docx)
                     </Button>
 
-                    {/* Botón .txt */}
+                    {/* Botón .html */}
+                    <Button
+                        size="sm"
+                        leftIcon={<ExternalLinkIcon />}
+                        onClick={handleDownloadHtml}
+                        variant="outlineAzul"
+                    >
+                        HTML
+                    </Button>
 
+                    {/* Botón .txt */}
                     <Button
                         size="sm"
                         leftIcon={<DownloadIcon />}
                         onClick={handleDownload}
-                        variant="outlineAzul"  // Outline azul
+                        variant="outlineAzul"
                     >
-                        Descargar (.txt)
+                        Texto (.txt)
                     </Button>
 
                     {onRegenerate && (
